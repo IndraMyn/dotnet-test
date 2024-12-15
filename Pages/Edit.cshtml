@@ -1,0 +1,238 @@
+@page "/edit/{id}"
+@model EditModel
+@{
+    ViewData["Title"] = "Edit Item";
+}
+
+@section NavbarTitle {
+    <a class="navbar-brand text-white ms-3" style="font-size: 25px; font-weight: bold;" asp-area="" asp-page="/Index">
+        EDIT - SALES ORDER
+    </a>
+}
+
+<form method="post">
+    <input type="text" hidden asp-for="@Model.OrderDetail.ID" />
+    <div class="pt-3 pb-3" style="background-color:#082c5c">
+        <h3 class="text-center text-white">Sales Order Information</h3>
+    </div>
+
+    <div class="border p-3 mb-3 container-fluid">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="salesOrderNumber">Sales Order Number *</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="text" id="salesOrderNumber" class="form-control" placeholder="Input Here" asp-for="@Model.OrderDetail.SalesOrder">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="customer">Customer</label>
+                    </div>
+                    <div class="col-6">
+                        <select id="customer" class="form-control" asp-for="@Model.OrderDetail.CustomerId">
+                            <option>Select One</option>
+                            @foreach (var customer in Model.Customers)
+                            {
+                                <option value="@customer.ComCustomerId">@customer.CustomerName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="orderDate">Order Date *</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="date" id="orderDate" class="form-control" asp-for="@Model.OrderDetail.OrderDate">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="address">Address</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="text" id="address" class="form-control" placeholder="Input Here" asp-for="@Model.OrderDetail.Address">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-3 pb-3 mb-3" style="background-color:#082c5c">
+        <h3 class="text-center text-white">Detail Item Information</h3>
+    </div>
+
+    <div class="border p-3 mb-3 container-fluid">
+        <button type="button" onclick="addRow()" class="btn btn-danger mb-3">Add Item</button>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Action</th>
+                    <th>Item Name</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="table-item">
+                @for (int i = 0; i < Model.OrderDetail.Items.Count; i++)
+                {
+                    <tr id="item-table-@i">
+                        <td>@(i + 1)</td>
+                        <td class="text-center justify-content-center align-items-center">
+                            <button type="button" onclick="editRow(@i)" id="edit-btn-@i" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></button>
+                            <button type="button" onclick="saveRow(@i)" id="save-btn-@i" class="btn btn-dark btn-sm" hidden><i class="bi bi-save"></i></button>
+                            <button type="button" onclick="removeRow(@i)" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </td>
+                        <td><input disabled type="text" id="item-@i" class="form-control" asp-for="@Model.OrderDetail.Items[i].ItemName" /></td>
+                        <td><input disabled type="number" oninput="updateTotal(@i)" id="qty-@i" class="form-control" asp-for="@Model.OrderDetail.Items[i].Qty" /></td>
+                        <td><input disabled type="number" oninput="updateTotal(@i)" id="price-@i" class="form-control" asp-for="@Model.OrderDetail.Items[i].Price" /></td>
+                        <td id="total-@i">@(Model.OrderDetail.Items[i].Qty*Model.OrderDetail.Items[i].Price)</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <div class="row mt-3">
+                            <div class="col-md-12 text-end">
+                                <strong>Total Item:</strong> <span id="total-items">0</span>
+                                <strong>Total Amount:</strong> <span id="total-amount">0.00</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+
+    <div class="text-center">
+        <button class="btn btn-danger" type="submit">Save</button>
+        <a asp-page="Index" class="btn btn-secondary">Close</a>
+    </div>
+</form>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .table-dark {
+        background-color: #003366;
+        color: #fff;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let count = @Model.OrderDetail.Items.Count;
+        let no = count + 1;
+        let index = count;
+
+        function addRow() {
+            const table = document.getElementById("table-item");
+            const item = document.createElement('tr');
+
+            item.id = `item-table-${index}`;
+
+            item.innerHTML = `
+                 <td>${no}</td>
+                 <td class="text-center justify-content-center align-items-center">
+                    <button type="button" onclick="editRow(${index})" id="edit-btn-${index}" class="btn btn-warning btn-sm" hidden><i class="bi bi-pencil"></i></button>
+                    <button type="button" onclick="saveRow(${index})" id="save-btn-${index}" class="btn btn-dark btn-sm"><i class="bi bi-save"></i></button>
+                    <button type="button" onclick="removeRow(${index})" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                 </td>
+                 <td><input id="item-${index}" name="OrderDetail.Items[${index}].ItemName" class="form-control" /></td>
+                 <td><input type="number" oninput="updateTotal(${index})" id="qty-${index}" name="OrderDetail.Items[${index}].Qty" class="form-control" /></td>
+                 <td><input type="number" oninput="updateTotal(${index})" id="price-${index}" name="OrderDetail.Items[${index}].Price" class="form-control" /></td>
+                 <td id="total-${index}">0.00</td>
+            `;
+            table.appendChild(item);
+
+            no++;
+            index++;
+            calculateSummary();
+        }
+
+        function saveRow(index) {
+            const item = document.getElementById(`item-${index}`);
+            const qty = document.getElementById(`qty-${index}`);
+            const price = document.getElementById(`price-${index}`);
+            const edit =  document.getElementById(`edit-btn-${index}`);
+            const save =  document.getElementById(`save-btn-${index}`);
+
+            if (qty.value && price.value && item.value) {
+                item.disabled = true;
+                qty.disabled = true;
+                price.disabled = true;
+                edit.hidden = false;
+                save.hidden = true;
+            }
+        }
+
+        function editRow(index) {
+            const item = document.getElementById(`item-${index}`);
+            const qty = document.getElementById(`qty-${index}`);
+            const price = document.getElementById(`price-${index}`);
+            const edit =  document.getElementById(`edit-btn-${index}`);
+            const save =  document.getElementById(`save-btn-${index}`);
+
+            item.disabled = false;
+            qty.disabled = false;
+            price.disabled = false;
+            edit.hidden = true;
+            save.hidden = false;
+        }
+
+        function removeRow(index) {
+            const element = document.getElementById(`item-table-${index}`);
+            element.remove();
+            calculateSummary();
+            no--;
+        }
+
+        function updateTotal(index) {
+            const qty = document.getElementById(`qty-${index}`);
+            const price = document.getElementById(`price-${index}`);
+            const total = document.getElementById(`total-${index}`);
+            total.innerHTML = formatNumber((qty.value || 0) * (price.value || 0));
+            calculateSummary();
+        }
+
+        function calculateSummary() {
+            const rows = document.querySelectorAll("#table-item tr");
+            let totalItems = 0;
+            let totalAmount = 0;
+
+            rows.forEach(row => {
+                const qtyInput = row.querySelector('input[name*="Qty"]');
+                const priceInput = row.querySelector('input[name*="Price"]');
+                if (qtyInput && priceInput) {
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    const price = parseFloat(priceInput.value) || 0;
+                    totalItems += qty;
+                    totalAmount += qty * price;
+                }
+            });
+
+            document.getElementById("total-items").textContent = totalItems;
+            document.getElementById("total-amount").textContent = formatNumber(totalAmount);
+        }
+        calculateSummary();
+    </script>
+}

@@ -1,0 +1,117 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@section NavbarTitle {
+    <a class="navbar-brand text-white ms-3" style="font-size: 25px; font-weight: bold;" asp-area="" asp-page="/Index">
+        SALES ORDER
+    </a>
+}
+
+<div class="container-fluid">
+    <form class="border border-dark border rounded-4 mb-3">
+        <div class="row mb-3 mt-3 ps-3 pe-3">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="keywords">Keywords</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="text" id="keywords" name="keyword" class="form-control" placeholder="Input Here">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="order-date">Order Date</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="date" id="order-date" name="orderDate" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary mb-3 me-3">Search</button>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between mb-3">
+        <div>
+            <a asp-page="Create" class="btn btn-danger">Add New Data</a>
+            <a asp-page-handler="Export" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i>Export To Excel</a>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>No</th>
+                <th>Action</th>
+                <th>Sales Order</th>
+                <th>Order Date</th>
+                <th>Customer</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Orders.Count; i++)
+            {
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td class="align-items-center justify-content-center text-center">
+                        <form class="align-items-center justify-content-center text-center" method="post" asp-page-handler="Delete" asp-route-id="@Model.Orders[i].ID" onsubmit="return confirm('Are you sure?')">
+                            <a asp-page="Edit" asp-route-id="@Model.Orders[i].ID" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                    <td>@Model.Orders[i].SalesOrder</td>
+                    <td>@Model.Orders[i].OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td>@Model.Orders[i].Customer</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5">
+                    <nav class="navbar">
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <a class="page-link" aria-label="Previous" asp-page="Index" asp-route-pages="@(Model.CurrentPage > 1 ? Model.CurrentPage - 1 : 1)" asp-route-perpage="5">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            @for (int i = 1; i <= Model.TotalPage; i++)
+                            {
+                                <li class="page-item"><a class="page-link" asp-page="Index" asp-route-pages="@i" asp-route-perpage="5">@i</a></li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link"aria-label="Next" asp-page="Index" asp-route-pages="@(Model.CurrentPage/5+1)" asp-route-perpage="5">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <strong id="text-pagination" class="text-secondary">@Model.CurrentPage - @(Model.CurrentPage + 4) of @Model.TotalItem items</strong>
+                    </nav>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .table-dark {
+        background-color: #003366;
+        color: #fff;
+    }
+</style>
